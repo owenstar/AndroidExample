@@ -12,8 +12,13 @@
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/go"
-            android:text="go"/>
+            android:id="@+id/get"
+            android:text="Get"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/post"
+            android:text="Post"/>
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

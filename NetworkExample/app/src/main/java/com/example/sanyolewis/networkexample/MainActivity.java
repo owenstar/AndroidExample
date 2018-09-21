@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -26,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         txt = this.findViewById(R.id.txt);
-        Button btn = this.findViewById(R.id.go);
+        Button btn = this.findViewById(R.id.get);
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -34,15 +35,29 @@ public class MainActivity extends AppCompatActivity {
                 Thread t = new Thread(){
                     @Override
                     public void run() {
-                        requestNotes();
+                        requestGetService();
                     }
                 };
                 t.start();
             }
         });
+
+        Button btn1 = this.findViewById(R.id.post);
+        btn1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Thread thread = new Thread(){
+                    @Override
+                    public void run() {
+                        requestPostService();
+                    }
+                };
+                thread.start();
+            }
+        });
     }
 
-    private  void requestNotes() {
+    private  void requestGetService() {
         String urlFormatString = "http://www.51work6.com/service/mynotes/WebService.php?"+"email=%s&type=%s&action=%s";
         String urlString = String.format(urlFormatString,"wjy_ios@163.com","JSON","query");
         BufferedReader br = null;
@@ -60,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
             }
             Log.i("777777",sb.toString());
             Message msg = new Message();
-            msg.obj = sb.toString();
+            msg.obj = "Get" + sb.toString();
             mHander.sendMessage(msg);
         }catch(Exception e){
             e.printStackTrace();
@@ -77,6 +92,54 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+    }
+
+    private  void requestPostService(){
+        String urlString = "http://www.51work6.com/service/mynotes/WebService.php";
+        String parameterString = String.format("email=%s&type=%s&action=%s","wjy_ios@163.com","JSON","query");
+        BufferedReader br = null;
+        HttpURLConnection con = null;
+        try {
+            URL requestUrl = new URL(urlString);
+            con = (HttpURLConnection) requestUrl.openConnection();
+            con.setRequestMethod("POST");
+            con.setDoOutput(true);
+
+            //设置参数
+            DataOutputStream stream = new DataOutputStream(con.getOutputStream());
+            stream.writeBytes(parameterString);
+            stream.close();
+
+            //打开网络输入流
+            InputStream is = con.getInputStream();
+            //通过is对象创建InputStreamReader对象
+            InputStreamReader isr = new InputStreamReader(is, "utf-8");
+            //通过isr对象创建BufferedReader对象
+            br = new BufferedReader(isr);
+
+            StringBuilder sb = new StringBuilder();
+            String line;
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+            }
+            Log.i("777777",sb.toString());
+            Message msg = new Message();
+            msg.obj = "Post" + sb.toString();
+            mHander.sendMessage(msg);
+        }catch(Exception e){
+            e.printStackTrace();
+        }finally {
+            if (con != null){
+                con.disconnect();
+            }
+            if(br != null){
+                try{
+                    br.close();
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+        }
     }
     private Handler mHander = new Handler(){
         @Override
